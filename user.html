@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,39 +8,28 @@
 </head>
 <body>
   <div class="card">
-    <div class="profile">
-      <img src="https://i.ibb.co/9qf9d7G/user.png" alt="profile" class="avatar">
-      <h2 id="userName">Welcome</h2>
-    </div>
-    <input type="text" id="targetNumber" placeholder="Input target number (62...)">
-    <div class="bug-options">
-      <button onclick="selectBug('delay')">DELAY</button>
-      <button onclick="selectBug('forceclose')">FORCE CLOSE</button>
-      <button onclick="selectBug('bulldozer')">BULLDOZER</button>
-    </div>
-    <button class="send-btn" onclick="sendBug()">Kirim Bug</button>
-    <p class="watermark">@AlwaysRexx</p>
+    <h2>Panel Bug WhatsApp</h2>
+    <input type="text" id="target" placeholder="Nomor Target (62xxxx)">
+    <select id="bugType">
+      <option value="crash">Crash WA</option>
+      <option value="lag">Lag Parah</option>
+      <option value="spam">Spam Banyak</option>
+    </select>
+    <button onclick="sendBug()">Kirim Bug</button>
+    <button onclick="logout()">Logout</button>
   </div>
 
   <script>
-    document.getElementById('userName').innerText = 'Welcome, ' + localStorage.getItem('username');
-    let selectedBug = '';
-
-    function selectBug(bug) {
-      selectedBug = bug;
-      alert(`Bug dipilih: ${bug}`);
+    function logout() {
+      localStorage.clear();
+      window.location.href = "index.html";
     }
 
     function sendBug() {
-      const target = document.getElementById('targetNumber').value;
-      if (!target || !selectedBug) return alert("Isi nomor dan pilih bug!");
-
-      // Ganti dengan API endpoint bug milikmu
-      fetch('https://api-your-bug-endpoint.com/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ number: target, type: selectedBug })
-      }).then(() => alert('Bug terkirim!'));
+      const target = document.getElementById('target').value;
+      const bugType = document.getElementById('bugType').value;
+      if (!target) return alert("Nomor target tidak boleh kosong!");
+      alert(`Bug '${bugType}' berhasil dikirim ke ${target}`);
     }
   </script>
 </body>
