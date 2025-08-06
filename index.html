@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WhatsApp Bug Webview</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="card login-card">
+    <h2 class="neon-text">Login</h2>
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Login</button>
+    <p id="login-error" class="error-text"></p>
+  </div>
+
+  <div id="user-panel" class="card hidden">
+    <img src="profile.png" class="profile neon-glow" />
+    <h3 class="neon-text">Kirim Bug</h3>
+    <input type="text" id="target" placeholder="Nomor Target (62...)" />
+    <select id="bug-type">
+      <option value="delay">Delay</option>
+      <option value="forceclose">Force Close</option>
+      <option value="bulldozer">Bulldozer</option>
+    </select>
+    <button onclick="kirimBug()">Kirim Bug</button>
+    <button onclick="logout()" class="logout-btn">Logout</button>
+    <p class="watermark">@AlwaysRexx</p>
+  </div>
+
+  <script>
+    const JSON_BIN_URL = "https://api.jsonbin.io/v3/b/6892bfd5f7e7a370d1f4ea04";
+    const JSON_BIN_KEY = "$2a$10$zKcSTNLMbWUQ.9p0ujh7CeLGdCj2TOAGYcOgvXmRwi5iyrV.HjPfu";
+
+    async function login() {
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      const res = await fetch(JSON_BIN_URL, {
+        headers: { "X-Master-Key": JSON_BIN_KEY }
+      });
+      const data = await res.json();
+      const users = data.record;
+      const user = users.find(acc => acc.username === u && acc.password === p);
+
+      if (!user) {
+        document.getElementById('login-error').textContent = "Username atau password salah!";
+        return;
+      }
+
+      if (user.expired && new Date(user.expired) < new Date()) {
+        document.getElementById('login-error').textContent = "Akun telah expired!";
+        return;
+      }
+
+      if (user.username === "admin") {
+        localStorage.setItem("adminLogged", "1");
+        window.location.href = "dashboard.html";
+      } else {
+        document.querySelector(".login-card").classList.add("hidden");
+        document.getElementById("user-panel").classList.remove("hidden");
+      }
+    }
+
+    function kirimBug() {
+      const nomor = document.getElementById("target").value;
+      const tipe = document.getElementById("bug-type").value;
+      alert("Mengirim bug " + tipe + " ke " + nomor);
+    }
+
+    function logout() {
+      localStorage.clear();
+      location.reload();
+    }
+  </script>
+</body>
+</html>

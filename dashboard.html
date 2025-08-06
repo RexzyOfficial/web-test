@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="card dashboard-card">
+    <h2 class="neon-text">Dashboard Admin</h2>
+    <div id="user-list"></div>
+    <h3 class="neon-text">Tambah User</h3>
+    <input type="text" id="new-username" placeholder="Username Baru" />
+    <input type="text" id="new-password" placeholder="Password Baru" />
+    <input type="date" id="new-expired" />
+    <button onclick="tambahUser()">Tambah User</button>
+    <button onclick="logout()" class="logout-btn">Logout</button>
+  </div>
+
+  <script>
+    const JSON_BIN_URL = "https://api.jsonbin.io/v3/b/6892bfd5f7e7a370d1f4ea04";
+    const JSON_BIN_KEY = "$2a$10$zKcSTNLMbWUQ.9p0ujh7CeLGdCj2TOAGYcOgvXmRwi5iyrV.HjPfu";
+    let userData = [];
+
+    window.onload = async () => {
+      if (!localStorage.getItem("adminLogged")) {
+        window.location.href = "index.html";
+        return;
+      }
+      await loadUsers();
+    };
+
+    async function loadUsers() {
+      const res = await fetch(JSON_BIN_URL, {
+        headers: { "X-Master-Key": JSON_BIN_KEY }
+      });
+      const data = await res.json();
+      userData = data.record.filter(u => u.username !== 'admin');
+
+      const list = document.getElementById("user-list");
+      list.innerHTML = "";
+      userData.forEach((u, i) => {
+        const el = document.createElement("div");
+        el.className = "user-row";
+        el.innerHTML = `
+          <span>${u.username} - Exp: ${u.expired}</span>
+          <button onclick="hapusUser(${i})">Hapus</button>
+        `;
+        list.appendChild(el);
+      });
+    }
+
+    async function tambahUser() {
+      const u = document.getElementById("new-username").value;
+      const p = document.getElementById("new-password").value;
+      const e = document.getElementById("new-expired").value;
+      userData.push({ username: u, password: p, expired: e });
+      await simpanData();
+    }
+
+    async function hapusUser(i) {
+      if (confirm("Yakin ingin hapus user ini?")) {
+        userData.splice(i, 1);
+        await simpanData();
+      }
+    }
+
+    async function simpanData() {
+      const updated = [{ username: "admin", password: "admin123" }, ...userData];
+      await fetch(JSON_BIN_URL, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Master-Key": JSON_BIN_KEY
+        },
+        body: JSON.stringify(updated)
+      });
+      await loadUsers();
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
