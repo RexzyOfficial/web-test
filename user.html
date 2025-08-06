@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Panel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="profile">
+      <img src="https://i.ibb.co/9qf9d7G/user.png" alt="profile" class="avatar">
+      <h2 id="userName">Welcome</h2>
+    </div>
+    <input type="text" id="targetNumber" placeholder="Input target number (62...)">
+    <div class="bug-options">
+      <button onclick="selectBug('delay')">DELAY</button>
+      <button onclick="selectBug('forceclose')">FORCE CLOSE</button>
+      <button onclick="selectBug('bulldozer')">BULLDOZER</button>
+    </div>
+    <button class="send-btn" onclick="sendBug()">Kirim Bug</button>
+    <p class="watermark">@AlwaysRexx</p>
+  </div>
+
+  <script>
+    document.getElementById('userName').innerText = 'Welcome, ' + localStorage.getItem('username');
+    let selectedBug = '';
+
+    function selectBug(bug) {
+      selectedBug = bug;
+      alert(`Bug dipilih: ${bug}`);
+    }
+
+    function sendBug() {
+      const target = document.getElementById('targetNumber').value;
+      if (!target || !selectedBug) return alert("Isi nomor dan pilih bug!");
+
+      // Ganti dengan API endpoint bug milikmu
+      fetch('https://api-your-bug-endpoint.com/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ number: target, type: selectedBug })
+      }).then(() => alert('Bug terkirim!'));
+    }
+  </script>
+</body>
+</html>

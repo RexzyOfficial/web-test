@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="menu" onclick="toggleDashboard()">☰ Dashboard</div>
+  </div>
+
+  <div class="card" id="bugPanel">
+    <!-- Sama seperti user.html -->
+    <div class="profile">
+      <img src="https://i.ibb.co/9qf9d7G/user.png" alt="profile" class="avatar">
+      <h2>Welcome, Admin</h2>
+    </div>
+    <input type="text" id="targetNumber" placeholder="Input target number (62...)">
+    <div class="bug-options">
+      <button onclick="selectBug('delay')">DELAY</button>
+      <button onclick="selectBug('forceclose')">FORCE CLOSE</button>
+      <button onclick="selectBug('bulldozer')">BULLDOZER</button>
+    </div>
+    <button class="send-btn" onclick="sendBug()">Kirim Bug</button>
+    <p class="watermark">@AlwaysRexx</p>
+  </div>
+
+  <div class="card hidden" id="dashboard">
+    <h2>User Dashboard</h2>
+    <div id="userList"></div>
+    <h3>Tambah User</h3>
+    <input type="text" id="newUser" placeholder="Username">
+    <input type="text" id="newPass" placeholder="Password">
+    <select id="newRole">
+      <option value="user">User</option>
+      <option value="admin">Admin</option>
+    </select>
+    <input type="number" id="expire" placeholder="Expired (timestamp)">
+    <button onclick="addUser()">Tambah</button>
+  </div>
+
+  <script>
+    const JSONBIN_API = 'https://api.jsonbin.io/v3/b/YOUR_BIN_ID_HERE';
+    const JSONBIN_KEY = 'YOUR_SECRET_KEY_HERE';
+    let currentData = [];
+
+    async function fetchUsers() {
+      const res = await fetch(JSONBIN_API, {
+        headers: { 'X-Master-Key': JSONBIN_KEY }
+      });
+      const data = await res.json();
+      currentData = data.record.users;
+
+      const container = document.getElementById('userList');
+      container.innerHTML = currentData.map(u => `
+        <div>${u.username} (${u.role}) - Exp: ${u.expired}
+        <button onclick="deleteUser('${u.username}')">Hapus</button></div>
+      `).join('');
+    }
+
+    async function addUser() {
+      const user = document.getElementById('newUser').value;
+      const pass = document.getElementById('newPass').value;
+      const role = document.getElementById('newRole').value;
+      const expired = document.getElementById('expire').value;
+
+      currentData.push({ username: user, password: pass, role, expired });
+
+      await fetch(JSONBIN_API, {
+        method: 'PUT',
+        headers: {
+          'X-Master-Key': JSONBIN_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ users: currentData })
+      });
+
+      alert('User ditambahkan!');
+      fetchUsers();
+    }
+
+    async function deleteUser(user) {
+      currentData = currentData.filter(u => u.username !== user);
+      await fetch(JSONBIN_API, {
+        method: 'PUT',
+        headers: {
+          'X-Master-Key': JSONBIN_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ users: currentData })
+      });
+      fetchUsers();
+    }
+
+    function toggleDashboard() {
+      document.getElementById('dashboard').classList.toggle('hidden');
+      fetchUsers();
+    }
+
+    function selectBug(bug) {
+      selectedBug = bug;
+      alert(`Bug dipilih: ${bug}`);
+    }
+
+    function sendBug() {
+      const target = document.getElementById('targetNumber').value;
+      if (!target || !selectedBug) return alert("Isi nomor dan pilih bug!");
+
+      fetch('https://api-your-bug-endpoint.com/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ number: target, type: selectedBug })
+      }).then(() => alert('Bug terkirim!'));
+    }
+
+    let selectedBug = '';
+  </script>
+</body>
+</html>

@@ -1,178 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>WhatsApp Bug Webview</title>
-  <style>
-    body {
-      background-color: #0d0d0d;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: #ffffff;
-      margin: 0;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-
-    .card {
-      background-color: #1c1c1c;
-      border-radius: 12px;
-      box-shadow: 0 0 20px #9b59b6;
-      padding: 30px 25px;
-      max-width: 420px;
-      margin: 40px auto;
-      text-align: center;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 12px;
-      margin: 12px 0;
-      background-color: #2c2c2c;
-      border: 1px solid #9b59b6;
-      border-radius: 8px;
-      color: white;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 14px;
-      background-color: #9b59b6;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-weight: bold;
-      font-size: 16px;
-      cursor: pointer;
-      box-shadow: 0 0 12px #9b59b6;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background-color: #8e44ad;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .neon-text {
-      color: #ffffff;
-      font-size: 24px;
-      text-shadow: 0 0 5px #9b59b6, 0 0 10px #9b59b6;
-      margin-bottom: 20px;
-    }
-
-    .profile {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      margin: 10px auto 20px;
-      display: block;
-      border: 2px solid #9b59b6;
-      box-shadow: 0 0 10px #9b59b6;
-    }
-
-    .watermark {
-      margin-top: 25px;
-      font-size: 0.9em;
-      color: #888;
-      text-align: center;
-    }
-
-    .logout-btn {
-      background-color: #34495e;
-      margin-top: 20px;
-    }
-
-    .logout-btn:hover {
-      background-color: #2c3e50;
-    }
-
-    @media (max-width: 480px) {
-      .card {
-        padding: 25px 18px;
-        margin: 20px 10px;
-      }
-
-      input, select, button {
-        font-size: 14px;
-      }
-
-      .neon-text {
-        font-size: 20px;
-      }
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>Login - Necro Bug</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="card login-card">
-    <h2 class="neon-text">Login</h2>
-    <input type="text" id="username" placeholder="Username" />
-    <input type="password" id="password" placeholder="Password" />
+    <h1>Necro Bug Login</h1>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
     <button onclick="login()">Login</button>
-    <p id="login-error" class="error-text"></p>
-  </div>
-
-  <div id="user-panel" class="card hidden">
-    <img src="profile.png" class="profile neon-glow" />
-    <h3 class="neon-text">Kirim Bug</h3>
-    <input type="text" id="target" placeholder="Nomor Target (62...)" />
-    <select id="bug-type">
-      <option value="delay">Delay</option>
-      <option value="forceclose">Force Close</option>
-      <option value="bulldozer">Bulldozer</option>
-    </select>
-    <button onclick="kirimBug()">Kirim Bug</button>
-    <button onclick="logout()" class="logout-btn">Logout</button>
     <p class="watermark">@AlwaysRexx</p>
   </div>
 
   <script>
-    const JSON_BIN_URL = "https://api.jsonbin.io/v3/b/6892bfd5f7e7a370d1f4ea04";
-    const JSON_BIN_KEY = "$2a$10$zKcSTNLMbWUQ.9p0ujh7CeLGdCj2TOAGYcOgvXmRwi5iyrV.HjPfu";
+    const JSONBIN_API = 'https://api.jsonbin.io/v3/b/YOUR_BIN_ID_HERE';
+    const JSONBIN_KEY = 'YOUR_SECRET_KEY_HERE';
 
     async function login() {
-      const u = document.getElementById('username').value;
-      const p = document.getElementById('password').value;
-      const res = await fetch(JSON_BIN_URL, {
-        headers: { "X-Master-Key": JSON_BIN_KEY }
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
+
+      const res = await fetch(JSONBIN_API, {
+        headers: { 'X-Master-Key': JSONBIN_KEY }
       });
       const data = await res.json();
-      const users = data.record;
-      const user = users.find(acc => acc.username === u && acc.password === p);
+      const users = data.record.users;
 
-      if (!user) {
-        document.getElementById('login-error').textContent = "Username atau password salah!";
-        return;
-      }
-
-      if (user.expired && new Date(user.expired) < new Date()) {
-        document.getElementById('login-error').textContent = "Akun telah expired!";
-        return;
-      }
-
-      if (user.username === "admin") {
-        localStorage.setItem("adminLogged", "1");
-        window.location.href = "dashboard.html";
+      const found = users.find(u => u.username === user && u.password === pass);
+      if (found) {
+        localStorage.setItem('role', found.role);
+        localStorage.setItem('username', found.username);
+        window.location.href = found.role === 'admin' ? 'admin.html' : 'user.html';
       } else {
-        document.querySelector(".login-card").classList.add("hidden");
-        document.getElementById("user-panel").classList.remove("hidden");
+        alert('Login gagal!');
       }
-    }
-
-    function kirimBug() {
-      const nomor = document.getElementById("target").value;
-      const tipe = document.getElementById("bug-type").value;
-      alert("Mengirim bug " + tipe + " ke " + nomor);
-    }
-
-    function logout() {
-      localStorage.clear();
-      location.reload();
     }
   </script>
 </body>
